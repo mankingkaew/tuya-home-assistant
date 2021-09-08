@@ -420,9 +420,7 @@ def _setup_entities(hass, device_ids: List):
                         device_manager,
                         DEVICE_CLASS_ENERGY,
                         DPCODE_FORWARD_ENERGY_TOTAL,
-                        json.loads(device.status_range.get(DPCODE_FORWARD_ENERGY_TOTAL).values).get(
-                        "unit", 0
-                        ),
+                        "kWh",
                     )
                 )
             if device.category == "zndb" or device.product_id=="aynmagfq01aq70he":
