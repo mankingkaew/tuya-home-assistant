@@ -413,7 +413,7 @@ def _setup_entities(hass, device_ids: List):
                         ),
                     )
                 )
-            if DPCODE_FORWARD_ENERGY_TOTAL in device.status:
+            if DPCODE_FORWARD_ENERGY_TOTAL in device.status or device.product_id=="aynmagfq01aq70he":
                 entities.append(
                     TuyaHaSensor(
                         device,
@@ -455,6 +455,7 @@ def _setup_entities(hass, device_ids: List):
                                 "V",
                             )
                         )
+
     return entities
 
 class TuyaHaSensor(TuyaHaDevice, SensorEntity):
@@ -491,7 +492,7 @@ class TuyaHaSensor(TuyaHaDevice, SensorEntity):
             __value = json.loads(self.tuya_device.status.get(self._code[:7])).get(self._code[8:])
             return __value
 
-        if  self._code.startswith("phase_") and self.tuya_device.product_id=="aynmagfq01aq70he":
+        if (self._code.startswith("phase_") or self._code.startswith("forward_energy_total")) and self.tuya_device.product_id=="aynmagfq01aq70he":
             st=self.tuya_device.status.get(self._code)
             if st is None:
                 self.tuya_device.status[self._code]=0
