@@ -249,7 +249,7 @@ async def _init_tuya_sdk(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                                 _LOGGER.debug(f"message _update--> updating power data")
                                 device.status["forward_energy_total"]=statusItem[statusNum]/100
                                 _LOGGER.debug(f"message _update--> {device.status}")
-                    ha_device.schedule_update_ha_state()
+                    dispatcher_send(hass, f"{TUYA_HA_SIGNAL_UPDATE_ENTITY}_{ha_device}")
     tuya_mq.add_message_listener(on_message_custom)
     return True
 
