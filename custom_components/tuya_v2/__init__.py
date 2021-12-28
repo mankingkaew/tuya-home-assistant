@@ -192,7 +192,7 @@ async def _init_tuya_sdk(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             devId=data["devId"]
             status=data["status"]
             _LOGGER.info(f"_on_device_report_custom-> {devId}, {status}")
-            for ha_device in hass.data[DOMAIN][entry.entry_id][TUYA_DEVICE_MANAGER]:
+            for ha_device in hass.data[DOMAIN][entry.entry_id][TUYA_HA_DEVICES]:
                 if ha_device.tuya_device.id == devId:
                     _LOGGER.debug(f"message _update--> {status}")
                     for statusItem in status:
