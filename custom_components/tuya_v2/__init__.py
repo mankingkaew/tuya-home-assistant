@@ -236,33 +236,6 @@ async def _init_tuya_sdk(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                     ha_device.schedule_update_ha_state()
     tuya_mq.add_message_listener(on_message_custom)
 
-
-    class DeviceListener(TuyaDeviceListener):
-        """Device Update Listener."""
-
-        def update_device(self, device: TuyaDevice):
-            for ha_device in hass.data[DOMAIN][TUYA_HA_DEVICES]:
-                if ha_device.tuya_device.id == device.id:
-                    _LOGGER.debug(f"_update-->{self};->>{ha_device.tuya_device.status}")
-                    ha_device.schedule_update_ha_state()
-
-        def add_device(self, device: TuyaDevice):
-
-    listener = DeviceListener(hass, entry)
-    hass.data[DOMAIN][entry.entry_id][TUYA_MQTT_LISTENER] = listener
-    device_manager.add_device_listener(listener)
-    hass.data[DOMAIN][entry.entry_id][TUYA_DEVICE_MANAGER] = device_manager
-
-    # Clean up device entities
-    await cleanup_device_registry(hass, entry)
-
-    _LOGGER.debug("init support type->%s", PLATFORMS)
-
-    hass.config_entries.async_setup_platforms(entry, PLATFORMS)
-
-    return True
-
-
 async def cleanup_device_registry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Remove deleted device registry entry if there are no remaining entities."""
 
