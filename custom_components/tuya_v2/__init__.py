@@ -17,14 +17,14 @@ from typing import Any
 import voluptuous as vol
 
 from tuya_iot import (
-    ProjectType,
     TuyaDevice,
     TuyaDeviceListener,
     TuyaDeviceManager,
     TuyaHomeManager,
     TuyaOpenAPI,
     TuyaOpenMQ,
-    tuya_logger
+    AuthType,
+    TUYA_LOGGER
 )
 
 from .aes_cbc import AES_ACCOUNT_KEY, KEY_KEY, XOR_KEY
@@ -133,24 +133,24 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def _init_tuya_sdk(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     entry_data = entry_decrypt(hass, entry, entry.data)
-    project_type = ProjectType(entry_data[CONF_PROJECT_TYPE])
+    project_type = 0
 
     api = TuyaOpenAPI(
         entry_data[CONF_ENDPOINT],
         entry_data[CONF_ACCESS_ID],
         entry_data[CONF_ACCESS_SECRET],
-        project_type,
+        AuthType.SMART_HOME,
     )
 
-    api.set_dev_channel("hass")
+    #api.set_dev_channel("hass")
 
-    if project_type == ProjectType.INDUSTY_SOLUTIONS:
+    if project_type == 1:
         response = await hass.async_add_executor_job(
-            api.login, entry_data[CONF_USERNAME], entry_data[CONF_PASSWORD]
+            api.connect, entry_data[CONF_USERNAME], entry_data[CONF_PASSWORD]
         )
     else:
         response = await hass.async_add_executor_job(
-            api.login,
+            api.connect,
             entry_data[CONF_USERNAME],
             entry_data[CONF_PASSWORD],
             entry_data[CONF_COUNTRY_CODE],
@@ -161,15 +161,14 @@ async def _init_tuya_sdk(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if response.get("success", False) is False:
         _LOGGER.error("Tuya login error response: %s", response)
         return False
-
+    api.token_info.expire_time = 0
     tuya_mq = TuyaOpenMQ(api)
-    tuya_mq.start()
 
     device_manager = TuyaDeviceManager(api, tuya_mq)
 
     # Get device list
     home_manager = TuyaHomeManager(api, tuya_mq, device_manager)
-    await hass.async_add_executor_job(home_manager.update_device_cache)
+
     hass.data[DOMAIN][entry.entry_id][TUYA_HOME_MANAGER] = home_manager
 
     listener = DeviceListener(hass, entry)
@@ -251,6 +250,8 @@ async def _init_tuya_sdk(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                                 _LOGGER.debug(f"message _update--> {device.status}")
                     dispatcher_send(hass, f"{TUYA_HA_SIGNAL_UPDATE_ENTITY}_{ha_device}")
     tuya_mq.add_message_listener(on_message_custom)
+    await hass.async_add_executor_job(home_manager.update_device_cache)
+    tuya_mq.start()
     return True
 
 async def cleanup_device_registry(hass: HomeAssistant, entry: ConfigEntry) -> None:
@@ -292,7 +293,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def async_setup(hass: HomeAssistant, config):
     """Set up the Tuya integration."""
-    tuya_logger.setLevel(_LOGGER.level)
+    TUYA_LOGGER.setLevel(_LOGGER.level)
     conf = config.get(DOMAIN)
 
     _LOGGER.debug(f"Tuya async setup conf {conf}")
@@ -339,6 +340,11 @@ class DeviceListener(TuyaDeviceListener):
 
     def add_device(self, device: TuyaDevice) -> None:
         """Add device added listener."""
+        _LOGGER.debug(
+            "_add-->%s;->>%s",
+            self,
+            device.id,
+        )
         device_add = False
 
         if device.category in itertools.chain(
