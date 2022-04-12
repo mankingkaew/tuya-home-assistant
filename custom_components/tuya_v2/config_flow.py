@@ -27,6 +27,7 @@ RESULT_SINGLE_INSTANCE = "single_instance_allowed"
 RESULT_AUTH_FAILED = "invalid_auth"
 TUYA_ENDPOINT_BASE = "https://openapi.tuyacn.com"
 TUYA_ENDPOINT_OTHER = "https://openapi.tuyaus.com"
+TUYA_ENDPOINT_EU = "https://openapi.tuyaeu.com"
 COUNTRY_CODE_CHINA = ["86", "+86", "China"]
 
 _LOGGER = logging.getLogger(__name__)
