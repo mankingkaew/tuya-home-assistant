@@ -2,7 +2,7 @@
 
 import logging
 
-from tuya_iot import ProjectType, TuyaOpenAPI
+from tuya_iot import  TuyaOpenAPI
 import voluptuous as vol
 
 from homeassistant import config_entries
@@ -74,10 +74,10 @@ class TuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     @staticmethod
     def _try_login(user_input):
-        project_type = ProjectType(user_input[CONF_PROJECT_TYPE])
+        project_type = 0
         api = TuyaOpenAPI(
-            TUYA_ENDPOINTS[user_input[CONF_ENDPOINT]]
-            if project_type == ProjectType.INDUSTY_SOLUTIONS
+            TUYA_ENDPOINT_OTHER
+            if project_type == 1
             else "",
             user_input[CONF_ACCESS_ID],
             user_input[CONF_ACCESS_SECRET],
@@ -85,28 +85,24 @@ class TuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
         api.set_dev_channel("hass")
 
-        if project_type == ProjectType.INDUSTY_SOLUTIONS:
-            response = api.login(user_input[CONF_USERNAME], user_input[CONF_PASSWORD])
+        if project_type == 1:
+            response = api.connect(user_input[CONF_USERNAME], user_input[CONF_PASSWORD])
         else:
             if user_input[CONF_COUNTRY_CODE] in COUNTRY_CODE_CHINA:
                 api.endpoint = TUYA_ENDPOINT_BASE
             else:
                 api.endpoint = TUYA_ENDPOINT_OTHER
 
-            response = api.login(
+            response = api.connect(
                 user_input[CONF_USERNAME],
                 user_input[CONF_PASSWORD],
                 user_input[CONF_COUNTRY_CODE],
                 TUYA_APP_TYPES[user_input[CONF_APP_TYPE]],
             )
-
-        if response.get("success", False) and isinstance(
-            api.token_info.platform_url, str
-        ):
-            api.endpoint = api.token_info.platform_url
-            if project_type == ProjectType.INDUSTY_SOLUTIONS:
-                user_input[CONF_ENDPOINT] = TUYA_ENDPOINTS[user_input[CONF_ENDPOINT]]
-            else:
+            if response.get("success", False) and isinstance(
+                api.token_info.platform_url, str
+            ):
+                api.endpoint = api.token_info.platform_url
                 user_input[CONF_ENDPOINT] = api.token_info.platform_url
 
         return response
@@ -142,13 +138,6 @@ class TuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             errors["base"] = RESULT_AUTH_FAILED
             _LOGGER.error("Login failed: %s", response)
 
-        if (ProjectType(TUYA_PROJECT_TYPES[self.conf_project_type]) == ProjectType.SMART_HOME):
-            return self.async_show_form(
-                step_id="login", data_schema=DATA_SCHEMA_SMART_HOME, errors=errors
-            )
-
         return self.async_show_form(
-            step_id="login",
-            data_schema=DATA_SCHEMA_INDUSTRY_SOLUTIONS,
-            errors=errors,
+            step_id="login", data_schema=DATA_SCHEMA_SMART_HOME, errors=errors
         )

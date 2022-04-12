@@ -1,21 +1,30 @@
 """Support for Tuya Smart devices."""
 
 import itertools
-from typing import Any
-import logging
 import json
+import logging
+from .aes_cbc import (
+    AesCBC as Aes,
+    XOR_KEY,
+    KEY_KEY,
+    AES_ACCOUNT_KEY,
+)
+import base64
+
+from typing import Any
+
 
 import voluptuous as vol
 
 from tuya_iot import (
-    ProjectType,
     TuyaDevice,
     TuyaDeviceListener,
     TuyaDeviceManager,
     TuyaHomeManager,
     TuyaOpenAPI,
     TuyaOpenMQ,
-    tuya_logger
+    AuthType,
+    TUYA_LOGGER
 )
 
 from .aes_cbc import AES_ACCOUNT_KEY, KEY_KEY, XOR_KEY
@@ -124,24 +133,24 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def _init_tuya_sdk(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     entry_data = entry_decrypt(hass, entry, entry.data)
-    project_type = ProjectType(entry_data[CONF_PROJECT_TYPE])
+    project_type = 0
 
     api = TuyaOpenAPI(
         entry_data[CONF_ENDPOINT],
         entry_data[CONF_ACCESS_ID],
         entry_data[CONF_ACCESS_SECRET],
-        project_type,
+        AuthType.SMART_HOME,
     )
 
-    api.set_dev_channel("hass")
+    #api.set_dev_channel("hass")
 
-    if project_type == ProjectType.INDUSTY_SOLUTIONS:
+    if project_type == 1:
         response = await hass.async_add_executor_job(
-            api.login, entry_data[CONF_USERNAME], entry_data[CONF_PASSWORD]
+            api.connect, entry_data[CONF_USERNAME], entry_data[CONF_PASSWORD]
         )
     else:
         response = await hass.async_add_executor_job(
-            api.login,
+            api.connect,
             entry_data[CONF_USERNAME],
             entry_data[CONF_PASSWORD],
             entry_data[CONF_COUNTRY_CODE],
@@ -152,15 +161,14 @@ async def _init_tuya_sdk(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if response.get("success", False) is False:
         _LOGGER.error("Tuya login error response: %s", response)
         return False
-
+    api.token_info.expire_time = 0
     tuya_mq = TuyaOpenMQ(api)
-    tuya_mq.start()
 
     device_manager = TuyaDeviceManager(api, tuya_mq)
 
     # Get device list
     home_manager = TuyaHomeManager(api, tuya_mq, device_manager)
-    await hass.async_add_executor_job(home_manager.update_device_cache)
+
     hass.data[DOMAIN][entry.entry_id][TUYA_HOME_MANAGER] = home_manager
 
     listener = DeviceListener(hass, entry)
@@ -175,8 +183,76 @@ async def _init_tuya_sdk(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     hass.config_entries.async_setup_platforms(entry, PLATFORMS)
 
-    return True
+    def on_message_custom(msg):
+        _LOGGER.info(f"on_message_custom: {msg}")
+        protocol = msg.get("protocol", 0)
+        data = msg.get("data", {})
+        if protocol == 4:
+            devId=data["devId"]
+            status=data["status"]
+            _LOGGER.info(f"_on_device_report_custom-> {devId}, {status}")
+            for ha_device in hass.data[DOMAIN][entry.entry_id][TUYA_HA_DEVICES]:
 
+                if ha_device == devId:
+                    device = device_manager.device_map[ha_device]
+                    if device is None:
+                        continue
+                    _LOGGER.debug(f"message _update--> {status}")
+                    for statusItem in status:
+                        for statusNum in statusItem:
+                            _LOGGER.debug(f"message _update--> stsusnum {statusNum}")
+                            if statusNum == "102":
+                                _LOGGER.debug(f"message _update--> updating current data")
+                                hexStatus=base64.b64decode(statusItem[statusNum]).hex()
+                                _LOGGER.debug(f"message _update--> hexStatus {hexStatus}")
+                                a_sub = hexStatus[0:6]
+                                b_sub = hexStatus[6:12]
+                                c_sub = hexStatus[12:18]
+                                _LOGGER.debug(f"message _update--> a_sub {a_sub}")
+                                _LOGGER.debug(f"message _update--> b_sub {b_sub}")
+                                _LOGGER.debug(f"message _update--> c_sub {c_sub}")
+                                device.status["phase_a_electricCurrent"]=int(a_sub,16)/1000
+                                device.status["phase_b_electricCurrent"]=int(b_sub,16)/1000
+                                device.status["phase_c_electricCurrent"]=int(c_sub,16)/1000
+                                _LOGGER.debug(f"message _update--> {device.status}")
+                            elif statusNum=="101":
+                                _LOGGER.debug(f"message _update--> updating voltage data")
+                                hexStatus=base64.b64decode(statusItem[statusNum]).hex()
+                                _LOGGER.debug(f"message _update--> hexStatus {hexStatus}")
+                                a_sub = hexStatus[0:4]
+                                b_sub = hexStatus[4:8]
+                                c_sub = hexStatus[8:12]
+                                _LOGGER.debug(f"message _update--> a_sub {a_sub}")
+                                _LOGGER.debug(f"message _update--> b_sub {b_sub}")
+                                _LOGGER.debug(f"message _update--> c_sub {c_sub}")
+                                device.status["phase_a_voltage"]=int(a_sub,16)/10
+                                device.status["phase_b_voltage"]=int(b_sub,16)/10
+                                device.status["phase_c_voltage"]=int(c_sub,16)/10
+                                _LOGGER.debug(f"message _update--> {device.status}")
+                            elif statusNum=="103":
+                                _LOGGER.debug(f"message _update--> updating power data")
+                                hexStatus=base64.b64decode(statusItem[statusNum]).hex()
+                                _LOGGER.debug(f"message _update--> hexStatus {hexStatus}")
+                                total_sub=hexStatus[0:6]
+                                a_sub = hexStatus[6:12]
+                                b_sub = hexStatus[12:18]
+                                c_sub = hexStatus[18:24]
+                                _LOGGER.debug(f"message _update--> a_sub {a_sub}")
+                                _LOGGER.debug(f"message _update--> b_sub {b_sub}")
+                                _LOGGER.debug(f"message _update--> c_sub {c_sub}")
+                                device.status["phase_a_power"]=int(a_sub,16)/10000
+                                device.status["phase_b_power"]=int(b_sub,16)/10000
+                                device.status["phase_c_power"]=int(c_sub,16)/10000
+                                _LOGGER.debug(f"message _update--> {device.status}")
+                            elif statusNum=="114":
+                                _LOGGER.debug(f"message _update--> updating power data")
+                                device.status["forward_energy_total"]=statusItem[statusNum]/100
+                                _LOGGER.debug(f"message _update--> {device.status}")
+                    dispatcher_send(hass, f"{TUYA_HA_SIGNAL_UPDATE_ENTITY}_{ha_device}")
+    tuya_mq.add_message_listener(on_message_custom)
+    await hass.async_add_executor_job(home_manager.update_device_cache)
+    tuya_mq.start()
+    return True
 
 async def cleanup_device_registry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Remove deleted device registry entry if there are no remaining entities."""
@@ -217,7 +293,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def async_setup(hass: HomeAssistant, config):
     """Set up the Tuya integration."""
-    tuya_logger.setLevel(_LOGGER.level)
+    TUYA_LOGGER.setLevel(_LOGGER.level)
     conf = config.get(DOMAIN)
 
     _LOGGER.debug(f"Tuya async setup conf {conf}")
@@ -264,6 +340,11 @@ class DeviceListener(TuyaDeviceListener):
 
     def add_device(self, device: TuyaDevice) -> None:
         """Add device added listener."""
+        _LOGGER.debug(
+            "_add-->%s;->>%s",
+            self,
+            device.id,
+        )
         device_add = False
 
         if device.category in itertools.chain(
