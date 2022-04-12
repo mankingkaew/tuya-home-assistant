@@ -8,42 +8,63 @@
 [![GitHub forks](https://img.shields.io/github/forks/tuya/tuya-home-assistant.svg?style=social&label=Fork)](https://GitHub.com/tuya/tuya-home-assistant/network/)
 [![GitHub stars](https://img.shields.io/github/stars/tuya/tuya-home-assistant.svg?style=social&label=Star)](https://GitHub.com/tuya/tuya-home-assistant/stargazers/)
 
-If you like Tuya Home Assistant Integration - give it a star, or fork it and contribute!
+If you like Tuya Home Assistant Integration, please give it a star or fork it and contribute!
 
-# Tuya Home Assistant Integration
+# Tuya Home Assistant Integration Documentation
 
 <p align="center">
     <img src="https://images.tuyacn.com/app/hass/ha_tuya.png" width="70%">
 </p>
 
-The Tuya Home Assistant integration (Tuya v2) is developed for controlling **Powered by Tuya (PBT)** devices using the [tuya-iot-python-sdk](https://github.com/tuya/tuya-iot-python-sdk) (a python version of [Tuya Open API](https://developer.tuya.com/en/docs/cloud/?_source=6c7c0e6d9fc9ac8296e1a48954e1d0e4)), and officially maintained by the Tuya Developer Team.
+The Tuya Home Assistant integration is developed for controlling **Powered by Tuya (PBT)** devices using the [tuya-iot-python-sdk](https://github.com/tuya/tuya-iot-python-sdk?_source=df9bd859d17e7610d5b9df34d38a83e9) (a python version of [Tuya Open API](https://developer.tuya.com/en/docs/cloud/?_source=6c7c0e6d9fc9ac8296e1a48954e1d0e4)), and maintained by the official Tuya Developer Team and Home Assistant Community.
 
-## Installation
-The [Tuya Home Assistant integration Wiki](https://github.com/tuya/tuya-home-assistant/wiki) contains step-by-step instruction on how to install Tuya Home Assistant Integration.
+## Important Note
 
-- [Tuya-IoT-Platform-Configuration](https://github.com/tuya/tuya-home-assistant/wiki/Tuya-IoT-Platform-Configuration-Guide-Using-Smart-Home-PaaS?_source=27c468b2abbb019eb4983fc8cea49b90)
-- [Install-Tuya-v2](https://github.com/tuya/tuya-home-assistant/wiki/Install-Tuya-v2?_source=d10de34623e3daca5b02e3c31528a0c4)
+We are announcing that the **Tuya v2 integration** hosted on this repository is no longer maintained by the Tuya Developer Team. Only the related documentation will be provided in this repository, as shown below:
 
-## [Tuya Beta Test Program](https://pages.tuya.com/develop/HomeAssistantBetaTest_V2?_source=df3c37ad796d2388fc5527a8029c7889)
-Welcome to join the [Tuya Beta Test Program](https://pages.tuya.com/develop/HomeAssistantBetaTest_V2?_source=df3c37ad796d2388fc5527a8029c7889) to get your development gifts and make a contribution to the integration. Your feedback is valuable to the whole community.
+#### Installation
+- [Tuya IoT Platform Configuration Guide](./docs/platform_configuration.md)
+- [Install Tuya Integration](./docs/install.md)
 
-## Supported Tuya Device Types
-Six primary categories, 31 secondary categories are supported now!
+#### Documentation
+- [Error Code and Troubleshooting](./docs/error_code.md)
+- [Tuya Integration FAQs](./docs/faq.md)
+- [Countries/Regions and Data Center](./docs/regions_dataCenters.md)
+- [Not Supported Device Category](./docs/not_supported_devices.md)
 
-:clap: [Supported Device Category](https://github.com/tuya/tuya-home-assistant/wiki/Supported-Device-Category?_source=f5f782752be3c4a9157ec47514d6091b)
+Here is the official [Tuya Home Assistant integration](https://www.home-assistant.io/integrations/tuya/).
 
- :tada: :tada: :tada: [Vote for Tuya v2 Integration New Device Driver Support!](https://github.com/tuya/tuya-home-assistant/discussions/86) :tada::tada::tada:
+If you want to contribute to the Tuya integration, please directly create issues or pull requests in the [Home Assistant Core repository](https://github.com/home-assistant/core/tree/dev/homeassistant/components/tuya).
+
+If you want to contribute to the documentation, please create issues or pull requests in this repo.
+
+We really appreciate your contributions and awesome ideas to this project.
+We are happy to hear your voices at **GitHub Discussions** to make our integration better.
+
+## Prerequisites
+
+- Your devices need to first be added in the [Tuya Smart or Smart Life app](https://developer.tuya.com/en/docs/iot/tuya-smart-app-smart-life-app-advantages?id=K989rqa49rluq&_source=fa490bbdc25052bdf601160a53e5629c#title-1-Download).
+- You will also need to create an account in the [Tuya IoT Platform](https://iot.tuya.com/?_source=a4c65f56395e05cf64cc8d4abb7396b6).
+This is a separate account to the one you made for the app. You cannot log in with your app's credentials.
+
+## Supported Tuya Device Categories
+Seven primary categories, 50 secondary categories are supported now!
+
+:clap: [Supported Device Category](./docs/supported_devices.md)
+
+ :tada: :tada: :tada: [Vote for Tuya Integration New Device Driver Support!](https://github.com/tuya/tuya-home-assistant/discussions/86) :tada::tada::tada:
 
 ## Verified PBT Products List
 
-If you have tested and confirmed any Tuya v2 compatible PBT (Powered by Tuya) device, please help to contribute to [Mark Watt Tech's page](https://github.com/MarkWattTech/Tuya-v2-Supported-Devices)
+If you have tested and confirmed any Tuya compatible PBT (Powered by Tuya) device, please help to contribute to [Mark Watt Tech's page](https://github.com/MarkWattTech/Tuya-v2-Supported-Devices)
 
-It's a collection of known working PBT Products that are compatible with Home Assistant and the Tuya-v2 integration.
+It's a collection of known working PBT Products that are compatible with Home Assistant and the Tuya integration.
 
 We appreciate your contribution!
 
-#### DISCLAIMER
-[Mark Watt](https://www.youtube.com/channel/UCQRm_z7seHnGsBiWDNEWr6A) is not associated with Home Assistant or Tuya. He is a Smart Home and Home Assistant Enthusiast, and would like to help make the Tuya v2 integration the best it can be.
+### DISCLAIMER
+
+[Mark Watt](https://www.youtube.com/channel/UCQRm_z7seHnGsBiWDNEWr6A) is not associated with Home Assistant or Tuya. He is a Smart Home and Home Assistant enthusiast, and would like to help make the Tuya integration the best it can be.
 
 ## Follow us
 
@@ -56,34 +77,15 @@ We appreciate your contribution!
 
 Follow us to get more information and leading technology on the Internet of Things, as well as updates and activities on the [Tuya IoT Developer Platform](https://developer.tuya.com/?_source=6d8d369b1b09336f622047669af507c4)
 
-## Documentation
+## Issue Feedback
 
-- :computer: [How to Get the Log](https://github.com/tuya/tuya-home-assistant/wiki/How-to-Get-the-Log?_source=f75a22f47cc75545545c239077c07e53)
-- **🎨** [How to Develop a New Driver](https://github.com/tuya/tuya-home-assistant/wiki/How-to-Develop-a-New-Driver?_source=dbf3bf17966af48325e4328b2535eefe)
-- :grey_question:  [Why does my device not update automatically?](https://github.com/tuya/tuya-home-assistant/discussions/113)
-
-## Link Tuya Devices to Home Assistant
-
-Please download and use the Tuya Smart or Tuya Smart Life apps to pair Tuya devices to the Home Assistant for controlling. You can check the following links to download the apps.
-
-- Tuya Smart App: [iOS App](https://apps.apple.com/us/app/tuyasmart/id1034649547) | [Android App](https://play.google.com/store/apps/details?id=com.tuya.smart&hl=en_US&gl=US)
-- Tuya Smart Life App: [iOS App](https://apps.apple.com/us/app/smart-life-smart-living/id1115101477) | [Android App](https://play.google.com/store/apps/details?id=com.tuya.smartlife&hl=en_US&gl=US)
-
-For more information, please check [How to Use Tuya Home Assistant Integration](https://developer.tuya.com/en/docs/iot/Home_Assistant_Integration?id=Kamcjcbvk2mu8&_source=1f6c7c604f6cc5057a3befbe1092b263).
-
-## Contributing
-
-Please refer to the [Contributing.md](./contributing.md) for contributing guide.
-
-## Issue feedback
-
-You can give feedback on issues you encounter via **GitHub Issue**.
+You can give feedback on issues you encounter for the documentation via **GitHub Issue**.
 
 ## Related Projects
 
-- [Tuya IoT Python SDK](https://github.com/tuya/tuya-iot-python-sdk)
+- [Tuya IoT Python SDK](https://github.com/tuya/tuya-iot-python-sdk?_source=df9bd859d17e7610d5b9df34d38a83e9)
 
-- [Tuya Connector Python](https://github.com/tuya/tuya-connector-python)
+- [Tuya Connector Python](https://github.com/tuya/tuya-connector-python?_source=5f909fc5f4f349e687a09dc5c91bac4c)
 
 ## LICENSE
 
